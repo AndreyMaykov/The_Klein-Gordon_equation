@@ -1,5 +1,5 @@
 # The Klein-Gordon equation
-In this project, a code for numerical solving the initial-boundary problem
+In this project, a code for numerically solving the initial-boundary problem
 ![ ](https://github.com/AndreiMaikov/The_Klein-Gordon_equation-1/blob/main/img/ibp_2.png)
 was developed. 
 
