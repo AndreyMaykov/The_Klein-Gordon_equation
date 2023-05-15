@@ -1,12 +1,16 @@
-#include <iostream.h>
+#include <iostream>
 #include <valarray>
-#include "Net_Gen.h"
-#include "phys_par.h"
-#include "Net_par.h"
 #include <cmath>
+
+#include "GridGen.h"
+#include "PhysPar.h"
+#include "GridPar.h"
+
 
 
 using std::valarray;
+using std::cout;
+using std::cin;
 
 
 extern void print_valarray_length(const valarray<double>&, int l =10);
@@ -17,24 +21,35 @@ extern double weight_matrix[4][3];
 
 double f_alpha(double r)
 {
-	return net_kappa(r)*pow(r,NN - 1)*p1(r);
+	return grid_kappa(r)*pow(r,NN - 1)*p1(r);
 };
 
 double f_beta(double r)
 {
-	double h_x = use_h_x();			//без этого приема получим h_x = 0 
-									//вместо "правильного" значения шага 
+	double h_x = use_h_x();			//without this, we'd get h_x = 0 
+									//instead of the correct value of h_x
 //	cout << "\n\tcontrol: in f_beta h_x = " << h_x <<'\n'; 
 	return p1(r)/(pow(r, NN -1))/h_x/h_x;
 };
 
 double f_pow(double r){return pow(r,NN - 1);};
 
+valarray<double>LambdaX(const valarray<double> U,
+						const valarray<double> L0,
+						const valarray<double> Lpls,
+						const valarray<double> Lmns
+						)
+	{
+		return L0*(U) +
+			   Lpls*(U.shift(1)) +
+			   Lmns*(U.shift(-1));
+	}; 
+
 
 /********************************************************************************/
-/*				Генерация сеточных операторов на отрезке [rb0, r0]				*/
+/*				Create grid operators for the interval [rb0, r0]				*/
 
-class NetOperators
+class GridOperators
 {
 public:
 	valarray<double>Epsilon;
@@ -51,44 +66,44 @@ public:
 	valarray<double>LF1mns;
 	valarray<double>LF2mns;
 /****************************/
-/*	Только для теста		*/
+/*	пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ		*/
 	valarray<double>TestL0;
 	valarray<double>TestLpls;
 	valarray<double>TestLmns;
 /*							*/
 /****************************/
-	NetOperators();
-	~NetOperators();
+	GridOperators();
+	~GridOperators();
 	
 };
 
-NetOperators::NetOperators():
+GridOperators::GridOperators():
 	Epsilon(K+2),
 	LF00(K+2),   LF10(K+2),   LF20(K+2),
 	LF0pls(K+2), LF1pls(K+2), LF2pls(K+2),
 	LF0mns(K+2), LF1mns(K+2), LF2mns(K+2)
 	,TestLpls(K+2),TestLmns(K+2),TestL0(K+2)
 	{
-	cout << "constructor for NetOperators" <<'\n';
+	cout << "constructor for GridOperators" <<'\n';
 	double h_x = use_h_x();
 	double h_t = use_h_t();
-	cout << "\tcontrol: in NetOperators h_x = " << h_x << "\n"; 
+	cout << "\tcontrol: in GridOperators h_x = " << h_x << "\n"; 
 	CreateWeightMatrix(type_of_scheme);
 	const valarray<double> Alpha = Tab_r_semiint.apply(f_alpha);
 //	cout << "Alpha: "; print_valarray_length(Alpha);
 	const valarray<double> Beta = Tab_r_int.apply(f_beta);
 	const valarray<double> Delta = 
-		Tab_r_int.apply(net_sigma)/
+		Tab_r_int.apply(grid_sigma)/
 		h_t/
 		(weight_matrix[1][0] - weight_matrix[1][2]);
 	const valarray<double> Epsilon = 
-		h_t*h_t/Tab_r_int.apply(net_rho);
+		h_t*h_t/Tab_r_int.apply(grid_rho);
 
 	const valarray<double> Lpls = Beta*Alpha;
 	const valarray<double> Lmns = Beta*(Alpha.shift(-1));
 	const valarray<double> L0 = - Lpls - Lmns;
 /****************************/
-/*	Только для теста		*/
+/*	пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ		*/
 	TestL0 = L0;
 	TestLpls = Lpls;
 	TestLmns = Lmns;
@@ -112,23 +127,23 @@ NetOperators::NetOperators():
 	LF00 =  Epsilon*(
 		weight_matrix[0][0] * L0 -
 		weight_matrix[1][0] * Delta -
-		weight_matrix[2][0] * gamma/(Tab_r_int.apply(f_pow)) -			///!!!! ошибка !!!! потеряна степень r
-		weight_matrix[3][0] * (Tab_r_int).apply(net_q)
+		weight_matrix[2][0] * gamma/(Tab_r_int.apply(f_pow)) -			///!!!! see the original 
+		weight_matrix[3][0] * (Tab_r_int).apply(grid_q)
 		);
 	LF10 = (  valarray<double>(2, K+2) +
 			Epsilon*(
 		weight_matrix[0][1] * L0 -
 		weight_matrix[1][1] * Delta -
-		weight_matrix[2][1] * gamma/(Tab_r_int.apply(f_pow)) -			///!!!! ошибка !!!! потеряна степень r
-		weight_matrix[3][1] * (Tab_r_int).apply(net_q)
+		weight_matrix[2][1] * gamma/(Tab_r_int.apply(f_pow)) -			///!!!! see the original
+		weight_matrix[3][1] * (Tab_r_int).apply(grid_q)
 		)
 		);
 	LF20 =(  valarray<double>(-1, K+2) +
 			Epsilon*(
 		weight_matrix[0][2] * L0 -
 		weight_matrix[1][2] * Delta -
-		weight_matrix[2][2] * gamma/(Tab_r_int.apply(f_pow)) -			///!!!! ошибка !!!! потеряна степень r
-		weight_matrix[3][2] * (Tab_r_int).apply(net_q)
+		weight_matrix[2][2] * gamma/(Tab_r_int.apply(f_pow)) -			///!!!! see the original
+		weight_matrix[3][2] * (Tab_r_int).apply(grid_q)
 		)
 		);
 
@@ -153,8 +168,8 @@ NetOperators::NetOperators():
 	
 
 };
-NetOperators::~NetOperators(){
-	cout << "destructor for NetOperators" <<'\n';
+GridOperators::~GridOperators(){
+	cout << "destructor for GridOperators" <<'\n';
 };
 
 

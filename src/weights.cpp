@@ -1,7 +1,11 @@
-#include <iostream.h>
+#include <iostream>
 #include <valarray>
 
+#include "Weights.h"
+
 using std::valarray;
+using std::cout;
+using std::cin;
 
 struct scheme_type_error
 {
@@ -72,7 +76,7 @@ for (int ll = 0; ll < 4; ll++)
 };
 
 /************************************************************************************/
-/*		Вывод weight_matrix в cout построчно с интервалом в одну строку				*/
+/*		пїЅпїЅпїЅпїЅпїЅ weight_matrix пїЅ cout пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ				*/
 /*
 	for(ll =0; ll<4;ll++)
 	{ 

@@ -1,6 +1,8 @@
 #include <valarray>
 #include <math.h>
 
+#include "IterSt.h"
+
 using std::valarray;
 
 extern int K;
@@ -33,8 +35,8 @@ void F_IterStep_Pointer(const valarray<double>* P_U0Prev,
 		UIFLeft;
 };
 /****************************************************************************/
-/*	Критерий сходимости итераций -- сейчас не лучший -- оценка абсолютной	*/
-/*			ошибки в норме сеточного аналога пространства С.				*/
+/*	The iteration convergence criterion 										
+    is set in the grid analog of the norm in C.								*/
 
 extern bool IterCrit(const valarray<double>& V1,
 					 const valarray<double>& V2, 

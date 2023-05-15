@@ -1,11 +1,13 @@
 #include <cmath>
-#include <iostream.h>
-#include <valarray>		//Нужно только для теста с NN != 1;
+#include <iostream>
+#include <valarray>		//See the original
+
+#include "PhysPar.h"
 
 const double Pi = 3.141592653589793;
 
 extern const int NN = 3;
-extern const double gamma = 3.2;/////////!!!!
+extern const double gamma = 3.2;  // !!!!
 extern const double rb0 = 10.0;
 extern const double r0 = 21.0;
 double rho(double r){return 1;};
@@ -13,73 +15,66 @@ double kappa(double r){return 1;};
 double sigma(double r){return 0;};
 double q(double r){return 0;};
 //double p1(double r){return 1;};
-/************************************************************/
-/*	  "Расширения" функций, описывающих среду, за r = r0	*/
+/****************************************************************/
+/*	Function "extensions" to describe the media beyound r = r0	*/
 
-double net_rho(double r){return (r<=r0)?rho(r):1;};
-double net_kappa(double r){return (r<=r0)?kappa(r):1;};
-double net_sigma(double r){return (r<=r0)?sigma(r):0;};
-double net_q(double r){return (r<=r0)?q(r):0;};
+double grid_rho(double r){return (r<=r0)?rho(r):1;};
+double grid_kappa(double r){return (r<=r0)?kappa(r):1;};
+double grid_sigma(double r){return (r<=r0)?sigma(r):0;};
+double grid_q(double r){return (r<=r0)?q(r):0;};
 
 
 /********************************************************************/
-/*	Коэффициенты дифф. оператора левой части граничных условий:		*/
-/*	(a*du/dt + b*du/dr + c*u)|_(r = rb0 || r0) = ... + f_(rb0 || r0)*/
-/*	а также неоднородности в граничных условиях и в самом дифф.		*/
-/*	уравнении  -- см. в конце файла									*/
+/*	Difference operator coefficients in the left side of the boundary conditions:	*/
+/*		(a*du/dt + b*du/dr + c*u)|_(r = rb0 || r0) = ... + f_(rb0 || r0)			*/
+/*	and the inhomogeneity of the boundary conditions and the differential equation 	*/
+/*	itself -- see below																	*/
 
 
 														
 /********************************************************************/
 
 /********************************************************************************/
-/*							Данные для тестов									*/
-/*			              Тест 1: стоячие волны									*/
+/*							Data for Tests										*/
+/*			              TEST 1: Stationary waves								*/
 
 int m = 2;
 double omega = Pi * m /(r0 - rb0);
 char* ff;
 double& use_omega()								
-{													//Почему-то внутри use_omega получаем
-//	cout <<"omega in use_omega = "<<omega<<'\n';	//omega = 0, поэтому важно использовать именно
-	static double om = Pi * m /(r0 - rb0);			// <-- такое выражение. Напрашивается такое
-//	cout <<"om in use_omega = "<<om<<'\n';			//объяснение: то обращение к use_omega, из 
-//	cin >> ff;										//которого происходит вывод omega, имеет место	
-	return om;										//в Net_par.cpp и там правильное значение может
-};													//быть только у константного выражения
-													//Pi * m /(r0 - rb0); обращения же к u_static
-													//имеют место в main.cpp, а туда правильно пере-
-													//дается и само omega.
+{													//See the original
+//	cout <<"omega in use_omega = "<<omega<<'\n';	
+	static double om = Pi * m /(r0 - rb0);			
+//	cout <<"om in use_omega = "<<om<<'\n';			
+//	cin >> ff;											
+	return om;										
+};													
+													
+													
+													
 const double oo = use_omega();
-//double h_t = 1.0; double h_x = 2.0;			//Не забыть изменить значения K и/или fc в Net_par.cpp
+//double h_t = 1.0; double h_x = 2.0;			//See the original
 double h_t = 0.6; double h_x = 2.0;
-/*	КОНСЕРВАТИВНАЯ СХЕМА:
-	omega_tild находится с помощью  MATHEMATICA  ConsTest.nb  из уравнения
+/*	The conservative scheme:
+	omega_tild were found using ConsTest.nb form the equation
  
 	tg(omega_tild * h_t / 2) = (h_t/h_x)*sin(omega * h_x/2)
 
-	при m = 1, r0 = 20, rb0 = 10, h_x = 2 (т. е. K = 5), h_t = 1 (т. е. fc = 0.5)
+	for m = 1, r0 = 20, rb0 = 10, h_x = 2 (i.e. K = 5), h_t = 1 (i.e. fc = 0.5)
 			omega_tild = 0.306592585897309;
-	при m = 1, r0 = 20, rb0 = 10, h_x = 2 (т. е. K = 5), h_t = 0.6 (т. е. fc = 0.3)
+	for m = 1, r0 = 20, rb0 = 10, h_x = 2 (i.e. K = 5), h_t = 0.6 (i.e. fc = 0.3)
 			omega_tild = 0.3081362764762855
-	при m = 2, r0 = 20, rb0 = 10, h_x = 2 (т. е. K = 5), h_t = 0.6 (т. е. fc = 0.3)
+	for m = 2, r0 = 20, rb0 = 10, h_x = 2 (i.e. K = 5), h_t = 0.6 (i.e. fc = 0.3)
 			omega_tild = 0.5818042033204008
 */
 //double omega_tild = 0.306592585897309;
 //double omega_tild = 0.3081362764762855;
 //double omega_tild = 0.5818042033204008;
 
-/*	СХЕМА "КРЕСТ":
-	omega_tild находится с помощью  MATHEMATICA  CrosTest.nb  из уравнения
- 
-	sin(omega_tild * h_t / 2) = (h_t/h_x)*sin(omega * h_x/2)
+/*	Five-point stencil -- see the original:
 
-	при m = 1, r0 = 20, rb0 = 10, h_x = 2 (т. е. K = 5), h_t = 1 (т. е. fc = 0.5)
-			omega_tild = ;
-	при m = 1, r0 = 20, rb0 = 10, h_x = 2 (т. е. K = 5), h_t = 0.6 (т. е. fc = 0.3)
-			omega_tild = ;
-	при m = 2, r0 = 20, rb0 = 10, h_x = 2 (т. е. K = 5), h_t = 0.6 (т. е. fc = 0.3)
-			omega_tild = 0.590874802986392
+	for m = 2, r0 = 20, rb0 = 10, h_x = 2 (i.e. K = 5), h_t = 0.6 (пїЅ. пїЅ. fc = 0.3)
+			double omega_tild =  0.676914121276099;
 */
 
 
@@ -88,7 +83,7 @@ double h_t = 0.6; double h_x = 2.0;
 double omega_tild =  0.676914121276099;
 
 
-//		Точные решения:															
+//		Exact solutions:															
 extern double u_static1(double r, double t){return sin(omega_tild * t) * sin(omega *(r - rb0));};
 extern double u_static2(double r, double t){return cos(omega_tild * t) * sin(omega *(r - rb0));};
 extern double u_static3(double r, double t){return sin(omega_tild * t) * cos(omega *(r - rb0));};
@@ -96,18 +91,18 @@ extern double u_travelling(double r, double t){return
 										 sin( omega_tild * t - omega * (r-rb0) );};
 
 /********************************************************************************/
-/*						Начальные условия для  u_static1						*/
-//				не забыть:	a_rb0= 0; b_rb0 = 0; c_rb0 = 1;
-//							a_r0 = 0; b_r0 = 0; c_r0 = 1; 
+/*						Initial conditions for  u_static1						*/
+//						a_rb0= 0; b_rb0 = 0; c_rb0 = 1;
+//						a_r0 = 0; b_r0 = 0; c_r0 = 1; 
 /*
 extern double u_0_init(double r){return 0;};
 extern double u_1_init(double r)
 	{return sin(omega_tild* h_t/2)/(h_t/2) *sin(omega*(r-rb0));};
 */
 /********************************************************************************/
-/*						Начальные условия для  u_static2						*/
-//				не забыть:	a_rb0= 0; b_rb0 = 0; c_rb0 = 1;
-//							a_r0 = 0; b_r0 = 0; c_r0 = 1; 
+/*						Initial conditions for   u_static2						*/
+//						a_rb0= 0; b_rb0 = 0; c_rb0 = 1;
+//						a_r0 = 0; b_r0 = 0; c_r0 = 1; 
 /*
 /*
 extern double u_0_init(double r)
@@ -116,9 +111,9 @@ extern double u_1_init(double r){return 0;};
 */
 /********************************************************************************/
 /********************************************************************************/
-/*						Начальные условия для  u_static3						*/
-//				не забыть:	a_rb0= 0; b_rb0 = 1; c_rb0 = 0;
-//							a_r0 = 0; b_r0 = 1; c_r0 = 0; 
+/*						Initial conditions for    u_static3						*/
+//						a_rb0= 0; b_rb0 = 1; c_rb0 = 0;
+//						a_r0 = 0; b_r0 = 1; c_r0 = 0; 
 
 extern double u_0_init(double r){return 0;};
 extern double u_1_init(double r)
@@ -136,10 +131,10 @@ extern double u_1_init(double r)
 	};
 
 /********************************************************************************/
-/*			              Тест 2: Бегущие волны									*/
+/*			              TEST 2: Traveling waves									*/
 
-//	Точное решение: u(r, t) = sin( omega_tild * t - omega * (r-rb0) ) 
-//	Начальные условия:
+//	Exact solution: u(r, t) = sin( omega_tild * t - omega * (r-rb0) ) 
+//	Initial conditions:
 /*
 extern double u_0_init(double r){return (0.0 - cos(omega_tild*h_t/2)*sin(omega*(r-rb0)));};
 extern double u_1_init(double r)
@@ -156,8 +151,8 @@ extern double u_1_init(double r)
 		return ff;
 	};
 */
-//Граничные условия:
-//Вариант 1: a_r0 = b_r0 = a_rb0 = b_rb0 = 0; c_r0 = c_rb0 = 1;
+//Boundary conditions:
+//Variant 1: a_r0 = b_r0 = a_rb0 = b_rb0 = 0; c_r0 = c_rb0 = 1;
 /*
 extern double f_rb0(double t)
 {
@@ -179,9 +174,9 @@ extern double f_r0(double t)
 };
 */
 
-/*Вариант 2: 
+/*Variant 2: 
 
-консервативная схема:
+conservative scheme:
  
 a_rb0 = 1;
 b_rb0 = cos(use_omega()*h_x/2);
@@ -191,7 +186,7 @@ a_r0 = 1;
 b_r0 = cos(use_omega()*h_x/2);
 c_r0 = 0;
 
-схема крест:
+five_point stencil:
 
 a_rb0 = 1;
 b_rb0 = cos(use_omega()*h_x/2)/cos(omega_tild*h_t/2);
@@ -202,7 +197,7 @@ b_r0 = cos(use_omega()*h_x/2)/cos(omega_tild*h_t/2);
 c_r0 = 0;
 */
 
-/*						Окончание данных для тестов								*/
+/*						End of Data for Tests								*/
 /********************************************************************************/
 extern double f_internal(double r, double t){return 0;};
 double f_rb0(double t)
@@ -279,8 +274,8 @@ extern double& use_a_rb0()
 };
 extern double& use_b_rb0()
 {	
-//	static double jj = cos(use_omega()*h_x/2);	//Для консервативной схемы
-//	static double jj = cos(use_omega()*h_x/2)/cos(omega_tild*h_t/2);	//Для схемы "крест"
+//	static double jj = cos(use_omega()*h_x/2);	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+//	static double jj = cos(use_omega()*h_x/2)/cos(omega_tild*h_t/2);	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅ"
 	static double jj = -1.0;
 	return jj;
 };
@@ -299,8 +294,8 @@ extern double& use_b_r0()
 {
 //	cout << ::omega <<'\n';
 //	cout << b_r0<<'\n';
-//	static double jj = cos(use_omega()*h_x/2);	//Для консервативной схемы
-//	static double jj = cos(use_omega()*h_x/2)/cos(omega_tild*h_t/2);	//Для схемы "крест"
+//	static double jj = cos(use_omega()*h_x/2);	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+//	static double jj = cos(use_omega()*h_x/2)/cos(omega_tild*h_t/2);	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅ"
 	static double jj = 1.0;
 //	cout << "jj in use_b_r0 ="<<jj<<'\n';
 //	cin>>fff;

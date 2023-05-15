@@ -1,11 +1,17 @@
-using std::valarray;
+#pragma once
 
 extern const std::valarray<double> Alpha;
 extern const std::valarray<double> Beta;
 extern double f_alpha(double);
 extern double f_beta(double);
 
-class NetOperators
+valarray<double>LambdaX(const valarray<double> U,
+						const valarray<double> L0,
+						const valarray<double> Lpls,
+						const valarray<double> Lmns
+						);
+
+class GridOperators
 {
 public:
 	valarray<double>Epsilon;
@@ -23,14 +29,14 @@ public:
 	valarray<double>LF2mns;
 
 /****************************/
-/*	Только для теста		*/
+/*	See the original		*/
 	valarray<double>TestL0;
 	valarray<double>TestLpls;
 	valarray<double>TestLmns;
 /*							*/
 /****************************/
 
-	NetOperators();
-	~NetOperators();
+	GridOperators();
+	~GridOperators();
 	
 };

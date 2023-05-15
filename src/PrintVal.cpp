@@ -1,10 +1,13 @@
 /************************************************************************************/
-/*	  Функция, выводящая valarray<double>V в cout строками по int n элементов.      */
-/*					Обращение: print_valarray_length(V,n)							*/
+// See the original
 
-
+#include <iostream>
 #include <valarray>
-#include <iostream.h>
+
+#include "PrintVal.h";
+
+using std::cout;
+
 
 void print_valarray_length(const std::valarray<double>& v, int length =10)
 {

@@ -1,6 +1,8 @@
-#include <valarray>		//Нужно только для теста с NN != 1;
+#pragma once
+
+#include <valarray>		//See the original
 extern const int NN;
-extern const double gamma;/////////!!!!
+extern const double gamma;    //    !!!!
 extern const double rb0;
 extern const double r0;
 
@@ -9,10 +11,10 @@ extern double kappa(double r);
 extern double sigma(double r);	
 extern double q(double r);		
 
-extern double net_rho(double r);	// = (r<=r0)?rho(r):1;
-extern double net_kappa(double r);	// = (r<=r0)?kappa(r):1;
-extern double net_sigma(double r);	// = (r<=r0)?sigma(r):0;
-extern double net_q(double r);		// = (r<=r0)?q(r):0;
+extern double grid_rho(double r);	// = (r<=r0)?rho(r):1;
+extern double grid_kappa(double r);	// = (r<=r0)?kappa(r):1;
+extern double grid_sigma(double r);	// = (r<=r0)?sigma(r):0;
+extern double grid_q(double r);		// = (r<=r0)?q(r):0;
 
 extern double u_0_init(double r);
 extern double u_1_init(double r);
@@ -49,7 +51,7 @@ extern double& use_a_r0();
 extern double& use_b_r0();
 extern double& use_c_r0();
 /********************************************************************************/
-/*		Точные решения для консервативной разностной схемы (тест)				*/
+/*				Exact solutions for the five-poin stencil scheme				*/
 extern double omega;
 double& use_omega();					
 extern double u_static1(double r, double t);

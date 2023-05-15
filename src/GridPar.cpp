@@ -1,7 +1,7 @@
-#include "phys_par.h"
-#include <iostream.h>
+#include "PhysPar.h"
+#include <iostream>
 #include <valarray>
-#include "Net_Gen.h"
+#include "GridGen.h"
 
 
 using std::valarray;
@@ -14,15 +14,15 @@ extern const double iteration_precision = 0.000000001;
 
 extern const double rb0;
 extern const double r0;
-char* type_of_scheme = "conservative";		//тип разностной схемы определяется здесь 
-extern double fx(double r){return r;};				//возможно, стоит определить "продолжения"
-extern double p1(double r){return 1;};				//типа net_fx(r) и net_p1(r) -- иначе труд-
-extern const double h_x = (fx(r0) - fx(rb0))/double(K); //ности c ProAlpha в NetOperators
+char* type_of_scheme = "conservative";		//The type of the difference scheme is selected here. 
+extern double fx(double r){return r;};			//See the original
+extern double p1(double r){return 1;};				
+extern const double h_x = (fx(r0) - fx(rb0))/double(K); 
 
-double& use_h_x()								//вот таким ужасным способом удалось (до конца
-{												//ли?) преодолеть проблему неправильной переда-
-	static double h_x = (fx(r0) - fx(rb0))/K;	//чи значения h_x в файл Net_oper.cpp (точнее,
-	return h_x;									//в соответствующий объектный модуль)
+double& use_h_x()								//See the original
+{												
+	static double h_x = (fx(r0) - fx(rb0))/K;	
+	return h_x;									
 };
 
 extern const double h_t = fc * h_x;
@@ -75,18 +75,18 @@ extern const double CLeft1 = CL1/CL0;
 extern const double CLeft2 = CL2/CL0;
 extern const double CLeft3 = CL3/CL0;
 
-struct NetData
+struct GridData
 {
 	valarray<double> U2init;
 	valarray<double> U1init;
-	NetData();
-	~NetData();
+	GridData();
+	~GridData();
 };
-NetData::NetData():
+GridData::GridData():
 U1init(0.0,K+2),
 U2init(0.0,K+2)
 {
-	cout << "constructor for NetData" << '\n';
+	cout << "constructor for GridData" << '\n';
 	for(int k = 1; k <= K; k++)
 	{
 		U1init[k] = u_0_init(Tab_r_int[k]) + (h_t/2)*u_1_init(Tab_r_int[k]);
@@ -101,8 +101,8 @@ U2init(0.0,K+2)
 	U2init[K+1] = 2*u_0_init(Tab_r_semiint[K]) - u_0_init(Tab_r_int[K]) -
 		(h_t/2)*( 2*u_1_init(Tab_r_semiint[K]) - u_1_init(Tab_r_int[K]) );
 };
-NetData::~NetData()
+GridData::~GridData()
 {
-	cout << "destructor for NetData" << '\n';
+	cout << "destructor for GridData" << '\n';
 };
 

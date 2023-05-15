@@ -1,4 +1,4 @@
-using std::valarray;
+#pragma once
 
 void F_IterStep_Pointer(const valarray<double>* P_U0Prev,
 									 valarray<double>* P_U0New,
