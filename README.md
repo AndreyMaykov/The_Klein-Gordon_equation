@@ -7,6 +7,6 @@ This problem is related to the Klein-Gordon equation (https://en.wikipedia.org/w
 
 The code implements a family of explicit and implicit finite difference methods (https://en.wikipedia.org/wiki/Finite_difference_method). For the latter, an iterative algorithm was utilized to obtain the numeric solution. 
 
-The program requires a Visual C++ compiler; with other compilers, some adjustments may be needed.
+The program requires a Visual C++ compiler; with other compilers, the code may need some adjustments.
 
 **Note.** The code was (and still is) documented very scarcely, as it was only meant to be used by the author within a short time. I am going to add more detailed documentation later on.
