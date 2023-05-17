@@ -1,6 +1,6 @@
 # The Klein-Gordon equation
 In this project, a code for numerically solving the initial-boundary problem
-![ ](https://github.com/AndreiMaikov/The_Klein-Gordon_equation-1/blob/main/img/ibp_2.png)
+![ ](https://github.com/AndreyMaykov/The_Klein-Gordon_equation/blob/main/img/ibp_3.png)
 was developed. 
 
 This problem is related to <a href="https://en.wikipedia.org/wiki/Klein-Gordon_equation">the Klein-Gordon equation</a> and is important for testing the so-called open boundary conditions (also known as transparent or non-reflecting boundary conditions) for equations that describe electromagnetic or acoustic waves in various media.
